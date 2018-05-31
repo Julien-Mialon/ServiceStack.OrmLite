@@ -1678,8 +1678,20 @@ namespace ServiceStack.OrmLite
                 {
                     var subUnaryExpr = e as UnaryExpression;
                     var isSubExprAccess = subUnaryExpr?.Operand is IndexExpression;
-                    if (!isSubExprAccess)
-                        return true;
+                    if (isSubExprAccess)
+		                continue;
+
+                    if (e.NodeType == ExpressionType.Convert)
+                    {
+                        if (subUnaryExpr?.Operand is MemberExpression fieldExpression && fieldExpression.NodeType == ExpressionType.MemberAccess)
+                        {
+                            var isConstant = fieldExpression.Expression is ConstantExpression;
+                            if (isConstant)
+                                return false;
+                        }
+                    }
+
+                    return true;
                 }
 
                 if (e is BinaryExpression binaryExpr)
